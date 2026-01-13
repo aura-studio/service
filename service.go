@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aura-studio/boost/encoding"
+	"github.com/aura-studio/boost/encodingx"
 	"github.com/aura-studio/boost/magic"
 	"github.com/aura-studio/boost/safe"
 	"github.com/aura-studio/boost/style"
@@ -90,7 +90,7 @@ func (s *Service) Invoke(routePath string, req string) (rsp string) {
 		return s.client.Invoke(ctx, &message.Message{
 			Route: route.NewChainRoute(device.Addr(s.client),
 				append([]string{"", magic.Server, style.Standardize(strs[1], magic.SeparatorHyphen)}, strs[2:]...)),
-			Encoding: encoding.NewJSON(),
+			Encoding: encodingx.NewJSON(),
 			Data:     []byte(req),
 		}, device.NewFuncProcessor(func(ctx context.Context, msg *message.Message) error {
 			rsp = string(msg.Data)

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aura-studio/boost/encoding"
+	"github.com/aura-studio/boost/encodingx"
 	"github.com/aura-studio/boost/ref"
 	"github.com/aura-studio/boost/style"
 	"github.com/aura-studio/service/device"
@@ -14,8 +14,8 @@ import (
 	"github.com/aura-studio/service/route"
 )
 
-var e1 = encoding.NewJSON()
-var e2 = encoding.NewBase64()
+var e1 = encodingx.NewJSON()
+var e2 = encodingx.NewBase64()
 
 type Try struct {
 	logChan chan<- string
@@ -66,7 +66,7 @@ func (s *Client2) Process(ctx context.Context, msg *message.Message) error {
 	if !msg.Route.Dispatching() {
 		return s.Gateway().Process(ctx, msg)
 	}
-	bytes := &encoding.Bytes{}
+	bytes := &encodingx.Bytes{}
 	if err := e2.Unmarshal(msg.Data, bytes); err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (s *Client2) Process(ctx context.Context, msg *message.Message) error {
 func TestRouter1(t *testing.T) {
 	const (
 		timeout     = 10
-		version     = "1.0.0"
+		version     = "1"
 		logChanSize = 2
 		msgID       = 0
 	)
@@ -92,8 +92,8 @@ func TestRouter1(t *testing.T) {
 	t.Logf("\n%s", device.Tree(bus))
 
 	ctx := context.Background()
-	r := route.NewChainRoute(style.GoogleChain("/anonymous"), style.GoogleChain("/1.0.0/try/echo"))
-	reqData, err := encoding.Marshal(e1, &Ping{
+	r := route.NewChainRoute(style.GoogleChain("/anonymous"), style.GoogleChain("/1/try/echo"))
+	reqData, err := encodingx.Marshal(e1, &Ping{
 		Text: "libra: Hello, world!",
 	})
 	if err != nil {
@@ -133,7 +133,7 @@ func TestRouter1(t *testing.T) {
 func TestRouter2(t *testing.T) {
 	const (
 		timeout     = 10
-		version     = "1.0.0"
+		version     = "1"
 		logChanSize = 2
 		msgID       = 0
 	)
@@ -147,9 +147,9 @@ func TestRouter2(t *testing.T) {
 	t.Logf("\n%s", device.Tree(bus))
 
 	ctx := context.Background()
-	r := route.NewChainRoute(style.GoogleChain("/anonymous"), style.GoogleChain("/1.0.0/try/echo-bytes"))
+	r := route.NewChainRoute(style.GoogleChain("/anonymous"), style.GoogleChain("/1/try/echo-bytes"))
 
-	reqData, err := encoding.Marshal(e2, []byte("libra: Hello, world!"))
+	reqData, err := encodingx.Marshal(e2, []byte("libra: Hello, world!"))
 	if err != nil {
 		t.Fatalf("unexpected error getting from encoding: %v", err)
 	}
@@ -187,7 +187,7 @@ func TestRouter2(t *testing.T) {
 func TestRouter3(t *testing.T) {
 	const (
 		timeout     = 10
-		version     = "1.0.0"
+		version     = "1"
 		logChanSize = 2
 	)
 	logChan := make(chan string, logChanSize)
@@ -200,9 +200,9 @@ func TestRouter3(t *testing.T) {
 	t.Logf("\n%s", device.Tree(bus))
 
 	ctx := context.Background()
-	r := route.NewChainRoute(style.GoogleChain("/anonymous"), style.GoogleChain("/1.0.0/try/echo-bytes"))
+	r := route.NewChainRoute(style.GoogleChain("/anonymous"), style.GoogleChain("/1/try/echo-bytes"))
 
-	reqData, err := encoding.Marshal(e2, []byte("libra: Hello, world!"))
+	reqData, err := encodingx.Marshal(e2, []byte("libra: Hello, world!"))
 	if err != nil {
 		t.Fatalf("unexpected error getting from encoding: %v", err)
 	}
@@ -214,7 +214,7 @@ func TestRouter3(t *testing.T) {
 	}
 
 	processor := device.NewFuncProcessor(func(context.Context, *message.Message) error {
-		bytes := &encoding.Bytes{}
+		bytes := &encodingx.Bytes{}
 		if err := e2.Unmarshal(msg.Data, bytes); err != nil {
 			return err
 		}

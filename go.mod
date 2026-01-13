@@ -3,7 +3,7 @@ module github.com/aura-studio/service
 go 1.21
 
 require (
-	github.com/aura-studio/boost v1.22.1
+	github.com/aura-studio/boost v1.22.4
 	github.com/disiqueira/gotree v1.0.0
 )
 

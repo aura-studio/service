@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/aura-studio/boost/encoding"
+	"github.com/aura-studio/boost/encodingx"
 	"github.com/aura-studio/boost/magic"
 	"github.com/aura-studio/service/message"
 )
@@ -51,7 +51,7 @@ func (h *Handler) do(ctx context.Context, reqMsg *message.Message) (*message.Mes
 	mt := h.method.Type
 	var req interface{}
 	if mt.In(2) == magic.TypeOfBytes {
-		bytes := &encoding.Bytes{}
+		bytes := &encodingx.Bytes{}
 		err := reqMsg.Encoding.Unmarshal(reqMsg.Data, bytes)
 		if err != nil {
 			return nil, err

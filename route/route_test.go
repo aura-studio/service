@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/aura-studio/boost/magic"
-	"github.com/aura-studio/boost/style"
+	"github.com/aura-studio/magic"
 	"github.com/aura-studio/service/route"
+	"github.com/aura-studio/style"
 )
 
 func TestRoute(t *testing.T) {
@@ -21,4 +21,9 @@ func TestRoute(t *testing.T) {
 	if fmt.Sprint(route) != "[Bus:TestRoute:Src] -> [<Bus>:TestRoute:Dst]" {
 		t.Fatal("route string is not as expected")
 	}
+}
+
+func Test_GoogleChain(t *testing.T) {
+	src := style.GoogleChain("bus/QueryAll/src")
+	fmt.Println(src)
 }

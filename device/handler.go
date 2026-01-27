@@ -4,8 +4,8 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/aura-studio/boost/encodingx"
-	"github.com/aura-studio/boost/magic"
+	"github.com/aura-studio/encodingx"
+	"github.com/aura-studio/magic"
 	"github.com/aura-studio/service/message"
 )
 

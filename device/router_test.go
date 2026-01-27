@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aura-studio/boost/encodingx"
-	"github.com/aura-studio/boost/ref"
-	"github.com/aura-studio/boost/style"
+	"github.com/aura-studio/encodingx"
+	"github.com/aura-studio/reflectx"
 	"github.com/aura-studio/service/device"
 	"github.com/aura-studio/service/message"
 	"github.com/aura-studio/service/route"
+	"github.com/aura-studio/style"
 )
 
 var e1 = encodingx.NewJSON()
@@ -85,7 +85,7 @@ func TestRouter1(t *testing.T) {
 	logChan := make(chan string, logChanSize)
 	client := &Client1{device.NewBase(), logChan}
 	try := &Try{logChan}
-	service := device.NewRouter(ref.TypeName(try)).Integrate(try)
+	service := device.NewRouter(reflectx.TypeName(try)).Integrate(try)
 	router := device.NewRouter(version).Integrate(service)
 	bus := device.NewBus().Integrate(client, router)
 
@@ -140,7 +140,7 @@ func TestRouter2(t *testing.T) {
 	logChan := make(chan string, logChanSize)
 	client := &Client2{device.NewBase(), logChan}
 	try := &Try{logChan}
-	service := device.NewRouter(ref.TypeName(try)).Integrate(try)
+	service := device.NewRouter(reflectx.TypeName(try)).Integrate(try)
 	router := device.NewRouter(version).Integrate(service)
 	bus := device.NewBus().Integrate(client, router)
 
@@ -193,7 +193,7 @@ func TestRouter3(t *testing.T) {
 	logChan := make(chan string, logChanSize)
 	client := device.NewClient("Anonymous")
 	try := &Try{logChan}
-	service := device.NewRouter(ref.TypeName(try)).Integrate(try)
+	service := device.NewRouter(reflectx.TypeName(try)).Integrate(try)
 	router := device.NewRouter(version).Integrate(service)
 	bus := device.NewBus().Integrate(client, router)
 

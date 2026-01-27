@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aura-studio/boost/encodingx"
-	"github.com/aura-studio/boost/magic"
-	"github.com/aura-studio/boost/safe"
-	"github.com/aura-studio/boost/style"
+	"github.com/aura-studio/encodingx"
+	"github.com/aura-studio/magic"
+	"github.com/aura-studio/safe"
 	"github.com/aura-studio/service/device"
 	"github.com/aura-studio/service/message"
 	"github.com/aura-studio/service/route"
+	"github.com/aura-studio/style"
 )
 
 type Service struct {

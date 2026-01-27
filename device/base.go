@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"sync"
 
-	"github.com/aura-studio/boost/magic"
+	"github.com/aura-studio/magic"
 	"github.com/aura-studio/service/message"
 )
 

@@ -1,7 +1,7 @@
 package message
 
 import (
-	"github.com/aura-studio/boost/encodingx"
+	"github.com/aura-studio/encodingx"
 	"github.com/aura-studio/service/route"
 )
 

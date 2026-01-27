@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aura-studio/boost/magic"
+	"github.com/aura-studio/magic"
 )
 
 type Route interface {

@@ -76,6 +76,10 @@ func New(target any, opts ...Option) *Service {
 	return s
 }
 
+func (s *Service) Meta() string {
+	return ""
+}
+
 func (s *Service) Init() {
 	s.init()
 }

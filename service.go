@@ -97,12 +97,13 @@ func (s *Service) Invoke(routePath string, req string) (rsp string) {
 			Encoding: encodingx.NewJSON(),
 			Data:     []byte(req),
 		}, device.NewFuncProcessor(func(ctx context.Context, msg *message.Message) error {
-			rsp = string(msg.Data)
+			rsp = fmt.Sprintf("data://%v", string(msg.Data))
 			return nil
 		}))
 	}); err != nil {
 		return fmt.Errorf("error://%w", err).Error()
 	}
+
 	return
 }
 

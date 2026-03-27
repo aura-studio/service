@@ -126,7 +126,7 @@ func (s *Service) Invoke(routePath string, req string) (rsp string) {
 		}, device.NewFuncProcessor(func(ctx context.Context, msg *message.Message) error {
 			// Build response envelope from "Response.*" context keys
 			rspMeta := map[string]any{}
-			if c, ok := ctx.(*Context); ok {
+			if c := ContextFrom(ctx); c != nil {
 				for k, v := range c.data {
 					if after, found := strings.CutPrefix(k, "Response."); found {
 						rspMeta[after] = v

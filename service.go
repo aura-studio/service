@@ -2,33 +2,41 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"reflect"
 	"strings"
-	"time"
 
+	"github.com/aura-studio/cast"
+	"github.com/aura-studio/dynamic"
 	"github.com/aura-studio/encodingx"
 	"github.com/aura-studio/magic"
+	"github.com/aura-studio/mesh/device"
+	"github.com/aura-studio/mesh/message"
+	"github.com/aura-studio/mesh/route"
 	"github.com/aura-studio/safe"
-	"github.com/aura-studio/service/device"
-	"github.com/aura-studio/service/message"
-	"github.com/aura-studio/service/route"
 	"github.com/aura-studio/style"
 )
 
+var _ dynamic.Tunnel = (*Service)(nil)
+
+type envelope struct {
+	Meta map[string]any `json:"meta"`
+	Data string         `json:"data"`
+}
+
 type Service struct {
-	Options
 	target any
 	bus    *device.Router
 	client *device.Client
 	router *device.Router
-
-	init  func()
-	close func()
+	init   func()
+	close  func()
 }
 
-func New(target any, opts ...Option) *Service {
+func New(target any) *Service {
 	t := reflect.TypeOf(target)
 	if !(t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct) {
 		log.Panic("service must be a pointer to struct")
@@ -41,14 +49,10 @@ func New(target any, opts ...Option) *Service {
 	bus.Integrate(router)
 
 	s := &Service{
-		Options: defaultOptions,
-		target:  target,
-		client:  client,
-		router:  router,
-	}
-
-	for _, opt := range opts {
-		opt(s)
+		target: target,
+		bus:    bus,
+		client: client,
+		router: router,
 	}
 
 	if init, ok := t.MethodByName("Init"); ok {
@@ -85,23 +89,61 @@ func (s *Service) Init() {
 }
 
 func (s *Service) Invoke(routePath string, req string) (rsp string) {
-	strs := strings.Split(routePath, "/")
-	if len(strs) < 2 {
-		return fmt.Errorf("error://invalid route path: %s", routePath).Error()
+	ctx := NewContext(context.Background())
+
+	// Decode request envelope
+	var reqEnv envelope
+	if err := json.Unmarshal([]byte(req), &reqEnv); err != nil {
+		b, _ := json.Marshal(envelope{Meta: map[string]any{"Error": err.Error()}})
+		return string(b)
 	}
 
-	if err := safe.DoWithTimeout(60*time.Second, func(ctx context.Context) error {
+	// Decode base64 request data
+	reqData, err := base64.StdEncoding.DecodeString(reqEnv.Data)
+	if err != nil {
+		b, _ := json.Marshal(envelope{Meta: map[string]any{"Error": err.Error()}})
+		return string(b)
+	}
+
+	// Set request meta into context as "Request.{Key}"
+	for k, v := range reqEnv.Meta {
+		ctx.Set("Request."+k, cast.ToString(v))
+	}
+
+	// Route via mesh
+	strs := strings.Split(routePath, "/")
+	if len(strs) < 2 {
+		b, _ := json.Marshal(envelope{Meta: map[string]any{"Error": fmt.Errorf("invalid route path: %s", routePath).Error()}})
+		return string(b)
+	}
+
+	if err := safe.DoWithContext(ctx, func(ctx context.Context) error {
 		return s.client.Invoke(ctx, &message.Message{
 			Route: route.NewChainRoute(device.Addr(s.client),
 				append([]string{"", magic.Server, style.Standardize(strs[1], magic.SeparatorHyphen)}, strs[2:]...)),
 			Encoding: encodingx.NewJSON(),
-			Data:     []byte(req),
+			Data:     reqData,
 		}, device.NewFuncProcessor(func(ctx context.Context, msg *message.Message) error {
-			rsp = fmt.Sprintf("data://%v", string(msg.Data))
+			// Build response envelope from "Response.*" context keys
+			rspMeta := map[string]any{}
+			if c, ok := ctx.(*Context); ok {
+				for k, v := range c.data {
+					if after, found := strings.CutPrefix(k, "Response."); found {
+						rspMeta[after] = v
+					}
+				}
+			}
+			rspEnv := envelope{
+				Meta: rspMeta,
+				Data: base64.StdEncoding.EncodeToString(msg.Data),
+			}
+			rspBytes, _ := json.Marshal(rspEnv)
+			rsp = string(rspBytes)
 			return nil
 		}))
 	}); err != nil {
-		return fmt.Errorf("error://%w", err).Error()
+		b, _ := json.Marshal(envelope{Meta: map[string]any{"Error": err.Error()}})
+		return string(b)
 	}
 
 	return
@@ -109,16 +151,4 @@ func (s *Service) Invoke(routePath string, req string) (rsp string) {
 
 func (s *Service) Close() {
 	s.close()
-}
-
-func (s *Service) Bus() *device.Router {
-	return s.bus
-}
-
-func (s *Service) Client() *device.Client {
-	return s.client
-}
-
-func (s *Service) Router() *device.Router {
-	return s.router
 }
